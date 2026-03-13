@@ -12,10 +12,8 @@ import java.util.List;
 public class ThreadPoolManager {
 
     private final List<WorkerThread> workers = new ArrayList<>();
-    private final ExecutionMetrics metrics;
 
     public ThreadPoolManager(int numThreads, TaskQueue queue, ExecutionMetrics metrics) {
-        this.metrics = metrics;
         for (int i = 0; i < numThreads; i++) {
             WorkerThread worker = new WorkerThread(queue, metrics);
             worker.setName("Worker-" + i);
