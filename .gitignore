@@ -1,6 +1,15 @@
+# Compiled class files
 *.class
+
+# Logistics
 *.log
-.idea
-.vscode
-target/
+sources.txt
+
+# Generated parallel files
+*_parallel.java
+
+# Folders
 bin/
+target/
+.gemini/
+.agents/

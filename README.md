@@ -1,82 +1,62 @@
-# Java Parallel Task Execution Engine 🚀
+# Java Code Parallelizer 🚀
 
-A robust, multi-threaded parallel task execution engine built in pure Java. This project demonstrates advanced concurrency patterns, thread pool management, and efficient task scheduling without relying on external frameworks.
+**Java Code Parallelizer** is an automated source-to-source transformation tool that converts sequential Java programs into multithreaded versions. It uses Abstract Syntax Tree (AST) analysis to identify parallelizable patterns and injects concurrency utilities while maintaining program correctness.
 
-## 🌟 Key Features
+## ✨ Key Features
 
-- **Custom Thread Pool Management**: Efficiently manages a pool of worker threads to execute tasks concurrently.
-- **Thread-safe Task Queue**: Utilizes blocking queues for safe, concurrent producers and consumers.
-- **Graceful Shutdown**: Ensures all running and queued tasks are completed before the engine shuts down.
-- **Task Interface**: Extensible `Task` interface allowing easy integration of custom execution logic.
-- **Zero Dependencies**: Built entirely using Java's standard `java.util.concurrent` capabilities.
+- **Automated For-Loop Parallelization**: Automatically wraps loop bodies into `ExecutorService` tasks, utilizing multiple CPU cores.
+- **Async Method Chains**: Detects independent method blocks and converts them into non-blocking `CompletableFuture` executions.
+- **Smart Safety Engine**: Analyzes data dependencies within loops to prevent race conditions.
+- **Automatic Atomic Transformation**: Specifically identifies shared counters (e.g., `count++`) and automatically converts them to `AtomicInteger` for thread safety.
+- **Robust AST Parsing**: Built on top of [JavaParser](https://javaparser.org/) for precise code manipulation.
 
-## 🏗️ Architecture Design
+## 🛠️ How it Works
 
-The engine is structured around several core components:
+The tool follows a professional compiler-like pipeline:
+1. **Parser**: Reads sequential code and generates an AST.
+2. **Analyzer**: Detects loop patterns, method blocks, and shared variable conflicts.
+3. **Engine**: Applies transformations (Atomic mapping, Thread pool injection, Lambda wrapping).
+4. **Generator**: Outputs clean, formatted, and compile-ready multithreaded Java code.
 
-*   **`ExecutionEngine`**: The main orchestrator that clients interact with to submit tasks and manage the engine lifecycle.
-*   **`ThreadPoolManager`**: Handles the creation, allocation, and monitoring of `WorkerThread` instances.
-*   **`TaskQueue`**: A thread-safe queue (typically backed by `BlockingQueue`) that stores pending tasks waiting for an available thread.
-*   **`WorkerThread`**: Continuously polls the `TaskQueue` and executes the retrieved `Task` instances.
-*   **`Task`**: The interface representing a unit of work to be executed asynchronously.
-
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- Java Development Kit (JDK) 8 or higher.
+- JDK 8 or higher
+- `javaparser-core-3.26.1.jar` (included in `lib/`)
 
-### Installation
+### Running the Parallelizer
+```powershell
+# Compile the tool
+javac -d bin -cp "lib/*" src/main/java/com/parallelizer/**/*.java
 
-Clone the repository:
-```bash
-git clone https://github.com/Nirbhay71/java-parallel-task-execution-engine.git
-cd java-parallel-task-execution-engine
+# Run on a Java file
+java -cp "bin;lib/*" com.parallelizer.demo.Main MySequentialCode.java
 ```
 
-### Usage Example
+## 📊 Example Transformation
 
+**Sequential Input:**
 ```java
-import engine.ExecutionEngine;
-import engine.Task;
-
-public class Main {
-    public static void main(String[] args) {
-        // Initialize engine with a pool of 5 worker threads
-        ExecutionEngine engine = new ExecutionEngine(5);
-
-        // Submit tasks for parallel execution
-        for (int i = 1; i <= 10; i++) {
-            final int taskId = i;
-            engine.submitTask(new Task() {
-                @Override
-                public void execute() {
-                    System.out.println("Processing task " + taskId + " on " + Thread.currentThread().getName());
-                    try {
-                        Thread.sleep(1000); // Simulate work
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            });
-        }
-
-        // Gracefully shut down the engine
-        engine.shutdown();
-    }
+int count = 0;
+for (int i = 0; i < 1000; i++) {
+    count++; // Shared variable
+    processData(i);
 }
 ```
 
-## 🛠️ Lessons Learned & Technical Growth
+**Parallelized Output:**
+```java
+AtomicInteger count = new AtomicInteger(0);
+ExecutorService executor = Executors.newFixedThreadPool(AVAILABLE_CORES);
+for (int i = 0; i < 1000; i++) {
+    final int task_i = i;
+    executor.submit(() -> {
+        count.incrementAndGet();
+        processData(task_i);
+    });
+}
+executor.shutdown();
+```
 
-Building this project reinforced several core software engineering principles:
-- **Concurrency Control**: Managing race conditions and thread synchronization out-of-the-box.
-- **Producer-Consumer Pattern**: Implementing robust inter-thread communication logic.
-- **Resource Management**: Properly allocating and cleaning up system threads to prevent memory leaks and thread starvation.
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
-
-## 📝 License
-
+## ⚖️ License
 This project is licensed under the MIT License.

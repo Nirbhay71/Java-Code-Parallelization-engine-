@@ -1,19 +1,11 @@
 @echo off
-echo Cleaning old build files...
-if exist bin rd /s /q bin
-mkdir bin
+set CP="bin;lib/javaparser-core-3.26.1.jar"
+set MAIN_CLASS=com.parallelizer.demo.Main
 
-echo Compiling project...
-javac -d bin -sourcepath src\main\java src\main\java\engine\demo\Main.java
-
-if %errorlevel% neq 0 (
-    echo Compilation failed!
-    pause
-    exit /b %errorlevel%
+if "%~1"=="" (
+    echo Usage: run.bat [input_file.java]
+    echo Example: run.bat input.java
+    exit /b 1
 )
 
-echo.
-echo Running Parallel Task Execution Engine Demo...
-echo ------------------------------------------
-java -cp bin engine.demo.Main
-pause
+java -cp %CP% %MAIN_CLASS% %~1
